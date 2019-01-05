@@ -1,21 +1,38 @@
+# Modified version of https://github.com/kEpEx/laravel-crud-generator for Savage Soft projects.
+
 # laravel-crud-generator
 
-[![Latest Stable Version](https://poser.pugx.org/kepex/laravel-crud-generator/v/stable)](https://packagist.org/packages/kepex/laravel-crud-generator) [![Total Downloads](https://poser.pugx.org/kepex/laravel-crud-generator/downloads)](https://packagist.org/packages/kepex/laravel-crud-generator) [![Latest Unstable Version](https://poser.pugx.org/kepex/laravel-crud-generator/v/unstable)](https://packagist.org/packages/kepex/laravel-crud-generator) [![License](https://poser.pugx.org/kepex/laravel-crud-generator/license)](https://packagist.org/packages/kepex/laravel-crud-generator)
 
 php artisan command to generate fully working crud with grid paginated server side only by having database tables
 
 
 ### Installing
+Add the following to your `composer.json` file
 ```
-php composer.phar require kepex/laravel-crud-generator
+"repositories": [ {
+    "type": "package",
+    "package": {
+        "name": "zmon/laravel-crud-generator-zmon",
+        "version": "1.0.0",
+        "source": {
+            "url": "git@github.com:zmon/laravel-crud-generator-zmon.git",
+            "type": "git",
+            "reference": "master"
+          }
+     }
+}],
+"require": {
+    .
+    .
+    .
+    "zmon/laravel-crud-generator-zmon": "*"
+},
 ```
 
 Add to config/app.php the following line to the 'providers' array:
 ```
 CrudGenerator\CrudGeneratorServiceProvider::class,
 ```
-
-![Preview](https://raw.githubusercontent.com/kEpEx/laravel-crud-generator/master/preview.gif)
 
 
 ### Usage
