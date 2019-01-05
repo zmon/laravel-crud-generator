@@ -12,10 +12,10 @@ Add the following to your `composer.json` file
 "repositories": [ {
     "type": "package",
     "package": {
-        "name": "zmon/laravel-crud-generator-zmon",
+        "name": "zmon/laravel-crud-generator",
         "version": "1.0.0",
         "source": {
-            "url": "git@github.com:zmon/laravel-crud-generator-zmon.git",
+            "url": "git@github.com:zmon/laravel-crud-generator.git",
             "type": "git",
             "reference": "master"
           }
@@ -25,7 +25,7 @@ Add the following to your `composer.json` file
     .
     .
     .
-    "zmon/laravel-crud-generator-zmon": "*"
+    "zmon/laravel-crud-generator": "*"
 },
 ```
 
