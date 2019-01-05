@@ -37,18 +37,19 @@ class CrudGeneratorService
         $this->output->info('Creating catalogue for table: '.($this->tableName ?: strtolower(str_plural($this->modelName))));
         $this->output->info('Model Name: '.$modelname);
 
+        $model_singular = strtolower($modelname);
 
         $options = [
             'model_uc' => $modelname,
             'model_uc_plural' => str_plural($modelname),
-            'model_singular' => strtolower($modelname),
+            'model_singular' => $model_singular,
             'model_plural' => strtolower(str_plural($modelname)),
             'tablename' => $this->tableName ?: strtolower(str_plural($this->modelName)),
             'prefix' => $this->prefix,
             'custom_master' => $this->layout ?: 'crudgenerator::layouts.master',
             'controller_name' => $this->controllerName,
             'view_folder' => $this->viewFolderName,
-            'route_path' => $this->viewFolderName,
+            'route_path' => $model_singular, // $this->viewFolderName,
             'appns' => $this->appNamespace,
         ];
 
@@ -82,8 +83,28 @@ class CrudGeneratorService
         $filegenerator->path = app_path().'/Http/Controllers/'.$this->controllerName.'Controller.php';
         $filegenerator->Generate();
 
-        $filegenerator->templateName = 'view.add';
-        $filegenerator->path = base_path().'/resources/views/'.$this->viewFolderName.'/add.blade.php';
+        $filegenerator->templateName = 'Api';
+        $filegenerator->path = app_path().'/Http/Controllers/'.$this->controllerName.'Api.php';
+        $filegenerator->Generate();
+
+        $filegenerator->templateName = 'StoreRequest';
+        $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'StoreRequest.php';
+        $filegenerator->Generate();
+
+        $filegenerator->templateName = 'EditRequest';
+        $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'EditRequest.php';
+        $filegenerator->Generate();
+
+        $filegenerator->templateName = 'model';
+        $filegenerator->path = app_path().'/'.$modelname.'.php';
+        $filegenerator->Generate();
+
+        $filegenerator->templateName = 'view.create';
+        $filegenerator->path = base_path().'/resources/views/'.$this->viewFolderName.'/create.blade.php';
+        $filegenerator->Generate();
+
+        $filegenerator->templateName = 'view.edit';
+        $filegenerator->path = base_path().'/resources/views/'.$this->viewFolderName.'/edit.blade.php';
         $filegenerator->Generate();
 
         $filegenerator->templateName = 'view.show';
@@ -93,16 +114,36 @@ class CrudGeneratorService
         $filegenerator->templateName = 'view.index';
         $filegenerator->path = base_path().'/resources/views/'.$this->viewFolderName.'/index.blade.php';
         $filegenerator->Generate();
+
+        $filegenerator->templateName = 'Grid.vue';
+        $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Grid.vue';
+        $filegenerator->Generate();
+
+
+
         //###############################################################################
 
-        $addroute = 'Route::get(\'/'.$this->viewFolderName.'/grid\', \''.$this->controllerName.'Controller@grid\');';
+
+        // ### VUE JS ###
+
+        $addvue = "Vue.component('" . $model_singular . "-grid',       require('./components/" . $modelname . "Grid.vue').default);";
+        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
+        $this->output->info('Adding Vue: '.$addvue );
+
+        # $model_singular
+
+
+        // ### ROUTES ###
+        $addroute = 'Route::resource(\'/'.$model_singular.'\', \''.$this->controllerName.'Controller\');';
+        $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
+        $this->output->info('Adding Route: '.$addroute );
+
+        $addroute = 'Route::get(\'/api-'.$model_singular.'\', \''.$this->controllerName.'Api@index\');';
         $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
         $this->output->info('Adding Route: '.$addroute );
 
 
-        $addroute = 'Route::resource(\'/'.$this->viewFolderName.'\', \''.$this->controllerName.'Controller\');';
-        $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
-        $this->output->info('Adding Route: '.$addroute );
+
 
 
     }
@@ -127,17 +168,79 @@ class CrudGeneratorService
         foreach ($cols as $c) {
             $field = isset($c->Field) ? $c->Field : $c->field;
             $type = isset($c->Type) ? $c->Type : $c->type;
+            $null = $c->Null;  // NO
+            $primary_key = ($c->Key = 'PRI' ? true : false);
+            $default = $c->Default;
+            if ($x = preg_match( "/\((\d+)\)/", $c->Type, $out)) {
+                $size = (int) $out[1];
+            } else {
+                $size = false;
+            }
+
             $cadd = [];
+
             $cadd['name'] = $field;
-            $cadd['type'] = $field == 'id' ? 'id' : $this->getTypeFromDBType($type);
+            $cadd['type'] = $type = $field == 'id' ? 'id' : $this->getTypeFromDBType($type);
             $cadd['display'] = ucwords(str_replace('_', ' ', $field));
-            $ret[] = $cadd;
+
+
+            $validation = '';
+
+            switch ($field) {
+                case 'created':
+                case 'created_at':
+                case 'created_by':
+                case 'modified':
+                case 'updated_at':
+                case 'modified_by':
+                case 'wid':
+                break;
+
+                case 'id':
+
+                    $cadd['validation'] = 'numeric';
+
+                    $ret[] = $cadd;
+                    break;
+
+                default:
+                    
+                    switch ( $type ) {
+                        case 'text':
+                            $validation = "string";
+                            if ( $size ) $validation .= "|max:$size";
+                            break;
+                        case 'number':
+                            $validation = "numeric";
+                            break;
+                        case 'date':
+                            $validation = "date";
+                            if ( $size ) $validation .= "|max:$size";
+                            break;
+                        default:
+                            $validation = "string";
+                            var_dump($size);
+                            if ( $size ) $validation .= "|max:$size";
+                            break;
+                    }
+
+                    $cadd['validation'] = $validation;
+
+
+                    $ret[] = $cadd;
+                    break;
+            }
+
         }
+print_r($cadd);
+
+
         return $ret;
     }
 
     protected function getTypeFromDBType($dbtype) {
         if(str_contains($dbtype, 'varchar')) { return 'text'; }
+        if(str_contains($dbtype, 'char')) { return 'text'; }
         if(str_contains($dbtype, 'int') || str_contains($dbtype, 'float')) { return 'number'; }
         if(str_contains($dbtype, 'date')) { return 'date'; }
         return 'unknown';
@@ -147,22 +250,22 @@ class CrudGeneratorService
 
     protected function createModel($modelname, $prefix, $table_name) {
 
-        Artisan::call('make:model', ['name' => $modelname]);
-        
-
-        if($table_name) {
-            $this->output->info('Custom table name: '.$prefix.$table_name);
-            $this->appendToEndOfFile(app_path().'/'.$modelname.'.php', "    protected \$table = '".$table_name."';\n\n}", 2);
-        }
+//        Artisan::call('make:model', ['name' => $modelname]);
+//
+//
+//        if($table_name) {
+//            $this->output->info('Custom table name: '.$prefix.$table_name);
+//            $this->appendToEndOfFile(app_path().'/'.$modelname.'.php', "    protected \$table = '".$table_name."';\n\n}", 2);
+//        }
         
 
         $columns = $this->getColumns($prefix.($table_name ?: strtolower(str_plural($modelname))));
 
-        $cc = collect($columns);
-
-        if(!$cc->contains('name', 'updated_at') || !$cc->contains('name', 'created_at')) { 
-            $this->appendToEndOfFile(app_path().'/'.$modelname.'.php', "    public \$timestamps = false;\n\n}", 2, true);
-        }
+//        $cc = collect($columns);
+//
+//        if(!$cc->contains('name', 'updated_at') || !$cc->contains('name', 'created_at')) {
+//            $this->appendToEndOfFile(app_path().'/'.$modelname.'.php', "    public \$timestamps = false;\n\n}", 2, true);
+//        }
 
         $this->output->info('Model created, columns: '.json_encode($columns));
         return $columns;

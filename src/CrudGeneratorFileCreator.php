@@ -117,6 +117,8 @@ class CrudGeneratorFileCreator
 
     protected function customTemplateOfDefault($template_name) {
         $trypath = base_path().'/resources/templates/'.$template_name.'.tpl.php';
+
+
         if(file_exists($trypath)) return $trypath;
         return __DIR__.'/Templates/'.$template_name.'.tpl.php';
     }

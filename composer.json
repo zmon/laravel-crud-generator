@@ -6,8 +6,13 @@
         {
             "name": "Alfredo Aguirre",
             "email": "alfrednx@gmail.com"
+        },
+        {
+            "name": "Paul Barham",
+            "email": "paulb@savagesoft.com"
         }
-     ],
+
+    ],
     "require": {
         "php": ">=5.5.9",
         "laravel/framework": ">=5.0.0"
