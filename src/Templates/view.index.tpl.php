@@ -1,27 +1,24 @@
 @extends('layouts.master')
-
-@section('title')
-
-<title>[[model_uc]] List</title>
-
-@endsection
-
-@section('header')
-
-<ol class='breadcrumb'>
-    <li><a href='/[route_path]]'>[[model_uc]]</a></li>
-    <li class='active'>List</li>
+@php $nav_path = ['[[route_path]]']; @endphp
+@section('page-title', '[[display_name_singular]]')
+@section('page-help-link', '#TODO')
+@section('page-header-breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="location">[[display_name_singular]]</li>
 </ol>
+@stop
+@section('page-header-title')
+[[display_name_singular]]
 
-<h2>[[model_uc]] List</h2>
+@stop
 
-@endsection
 
 
 @section('content')
 
 
-<[[model_singular]]-grid :params="{
+<[[view_folder]]-grid :params="{
         Page: '{{ $page }}',
         Search: '{{ $search }}',
         sortOrder: '{{ $direction }}',
@@ -31,7 +28,7 @@
         CanShow: '{{ $can_show }}',
         CanDelete: '{{ $can_delete }}',
         CanExcel: '{{ $can_excel }}'
-    }"></[[model_singular]]-grid>
+    }"></[[view_folder]]-grid>
 
 
 

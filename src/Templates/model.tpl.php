@@ -16,6 +16,31 @@ class [[model_uc]] extends Model
     [[endforeach]]
     ];
 
+    protected $hidden = [
+        'active',
+        'created_by',
+        'modified_by',
+        'purged_by',
+        'created_at',
+        'updated_at',
+    ];
+
+    public function add($attributes)
+    {
+
+        try {
+            $this->fill($attributes)->save();
+        } catch (\Exception $e) {
+            info(__METHOD__ . ' line: ' . __LINE__ . ':  ' . $e->getMessage());
+            throw new \Exception($e->getMessage());
+        } catch (\Illuminate\Database\QueryException $e) {
+            info(__METHOD__ . ' line: ' . __LINE__ . ':  ' . $e->getMessage());
+            throw new \Exception($e->getMessage());
+        }
+
+        return true;
+    }
+
     /**
      * Get Grid/index data PAGINATED
      *
@@ -36,20 +61,7 @@ class [[model_uc]] extends Model
     }
 
 
-    public function add($attributes) {
 
-        try {
-            $this->fill($attributes)->save();
-        } catch (\Exception $e) {
-            info(__METHOD__ . ' line: ' . __LINE__ . ':  ' . $e->getMessage());
-            return false;
-        } catch (\Illuminate\Database\QueryException $e) {
-            info( __METHOD__ . ' line: ' . __LINE__ . ':  ' . $e->getMessage());
-            return false;
-        }
-
-        return true;
-    }
 
     /**
      * Create base query to be used by Grid, Download, and PDF
@@ -79,12 +91,64 @@ class [[model_uc]] extends Model
         }
 
         $query = [[model_uc]]::select('*')
-            ->orderBy($column, $direction);
+        ->orderBy($column, $direction);
 
         if ($keyword) {
             $query->where('name', 'like', '%' . $keyword . '%');
         }
         return $query;
+    }
+
+        /**
+         * Get export/Excel/download data query to send to Excel download library
+         *
+         * @param $per_page
+         * @param $column
+         * @param $direction
+         * @param string $keyword
+         * @return mixed
+         */
+
+    static function exportDataQuery(
+        $column,
+        $direction,
+        $keyword = '')
+    {
+
+        info(__METHOD__ . ' line: ' . __LINE__ . " $column, $direction, $keyword");
+
+        return self::buildBaseGridQuery($column, $direction, $keyword);
+
+    }
+
+    /**
+     * Get "options" for HTML select tag
+     *
+     * If flat return an array.
+     * Otherwise, return an array of records.  Helps keep in proper order durring ajax calls to Chrome
+     */
+    static public function getOptions($flat = false)
+    {
+
+        $thisModel = new static;
+
+        $records = $thisModel::select('id',
+            'name')
+            ->orderBy('name')
+            ->get();
+
+        if (!$flat) {
+            return $records;
+        } else {
+            $data = [];
+
+            foreach ($records AS $rec) {
+                $data[] = ['id' => $rec['id'], 'name' => $rec['name']];
+            }
+
+            return $data;
+        }
+
     }
 
 }

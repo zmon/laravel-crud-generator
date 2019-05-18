@@ -4,14 +4,16 @@ namespace CrudGenerator;
 
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use DB;
 use Artisan;
 
-class CrudGeneratorService 
+class CrudGeneratorService
 {
-    
+
     public $modelName = '';
     public $tableName = '';
+    public $displayName = '';
     public $prefix = '';
     public $force = false;
     public $layout = '';
@@ -20,40 +22,53 @@ class CrudGeneratorService
     public $viewFolderName = '';
     public $output = null;
     public $appNamespace = 'App';
+    public $gridColumns = [];
 
- 
+
     public function __construct()
     {
 
     }
 
-  
-    public function Generate() 
+
+    public function Generate()
     {
-        $modelname = ucfirst(str_singular($this->modelName));
-        $this->viewFolderName = strtolower($this->controllerName);
+
+        $this->controllerName = $this->controllerName;
+
+
+        $modelname = $this->modelName;
+        $model_singular = strtolower(Str::singular($this->tableName));
+
+        $this->viewFolderName = str_replace('_','-',$model_singular);
 
         $this->output->info('');
-        $this->output->info('Creating catalogue for table: '.($this->tableName ?: strtolower(str_plural($this->modelName))));
-        $this->output->info('Model Name: '.$modelname);
+        $this->output->info('Creating catalogue for table: '.$this->tableName);
+        $this->output->info('Model Name:     '.$modelname);
+        $this->output->info('Controler Name: '.$this->controllerName);
 
-        $model_singular = strtolower($modelname);
 
         $options = [
+            'display_name_singular' => $this->displayName,
             'model_uc' => $modelname,
             'model_uc_plural' => str_plural($modelname),
             'model_singular' => $model_singular,
             'model_plural' => strtolower(str_plural($modelname)),
-            'tablename' => $this->tableName ?: strtolower(str_plural($this->modelName)),
+            'tablename' => $this->tableName,
             'prefix' => $this->prefix,
             'custom_master' => $this->layout ?: 'crudgenerator::layouts.master',
             'controller_name' => $this->controllerName,
             'view_folder' => $this->viewFolderName,
-            'route_path' => $model_singular, // $this->viewFolderName,
+            'route_path' => $this->viewFolderName,
             'appns' => $this->appNamespace,
+            'display_uc_plural' => str_plural($modelname),
+            'display_singular' => $modelname,
+            'display_singular' => $modelname,
+
         ];
 
-        if(!$this->force) { 
+
+        if(!$this->force) {
             //if(file_exists(app_path().'/'.$modelname.'.php')) { $this->output->info('Model already exists, use --force to overwrite'); return; }
             if(file_exists(app_path().'/Http/Controllers/'.$this->controllerName.'Controller.php')) { $this->output->info('Controller already exists, use --force to overwrite'); return; }
             if(file_exists(base_path().'/resources/views/'.$this->viewFolderName.'/add.blade.php')) { $this->output->info('Add view already exists, use --force to overwrite'); return; }
@@ -63,15 +78,21 @@ class CrudGeneratorService
 
 
         $columns = $this->createModel($modelname, $this->prefix, $this->tableName);
-        
+
+
         $options['columns'] = $columns;
+        $options['grid_columns'] = count($this->gridColumns)  ? $this->makeGridColumns($columns) : $columns;
+        $options['number_of_grid_columns'] = count($options['grid_columns']) + 1;
         $options['first_column_nonid'] = count($columns) > 1 ? $columns[1]['name'] : '';
         $options['num_columns'] = count($columns);
-        
+
+        // dd($options);
+
+
         //###############################################################################
-        if(!is_dir(base_path().'/resources/views/'.$this->viewFolderName)) { 
+        if(!is_dir(base_path().'/resources/views/'.$this->viewFolderName)) {
             $this->output->info('Creating directory: '.base_path().'/resources/views/'.$this->viewFolderName);
-            mkdir( base_path().'/resources/views/'.$this->viewFolderName); 
+            mkdir( base_path().'/resources/views/'.$this->viewFolderName);
         }
 
 
@@ -87,12 +108,12 @@ class CrudGeneratorService
         $filegenerator->path = app_path().'/Http/Controllers/'.$this->controllerName.'Api.php';
         $filegenerator->Generate();
 
-        $filegenerator->templateName = 'StoreRequest';
-        $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'StoreRequest.php';
+        $filegenerator->templateName = 'IndexRequest';
+        $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'IndexRequest.php';
         $filegenerator->Generate();
 
-        $filegenerator->templateName = 'EditRequest';
-        $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'EditRequest.php';
+        $filegenerator->templateName = 'Request';
+        $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'Request.php';
         $filegenerator->Generate();
 
         $filegenerator->templateName = 'model';
@@ -119,6 +140,10 @@ class CrudGeneratorService
         $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Grid.vue';
         $filegenerator->Generate();
 
+        $filegenerator->templateName = 'Form.vue';
+        $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Form.vue';
+        $filegenerator->Generate();
+
 
 
         //###############################################################################
@@ -126,19 +151,40 @@ class CrudGeneratorService
 
         // ### VUE JS ###
 
-        $addvue = "Vue.component('" . $model_singular . "-grid',       require('./components/" . $modelname . "Grid.vue').default);";
+        $addvue = "//Vue.component('" . $this->viewFolderName . "-grid',       require('./components/" . $modelname . "Grid.vue'));    // May need to add .default);";
         $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
+
+        $addvue = "//Vue.component('" . $this->viewFolderName . "-form',       require('./components/" . $modelname . "Form.vue'));    // May need to add .default);";
+        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
+
+        $addvue = "Vue.component('" . $this->viewFolderName . "-grid', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-grid\" */ './components/" . $modelname . "Grid.vue'));";
+        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
+
+        $addvue = "Vue.component('" . $this->viewFolderName . "-form', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-form\" */ './components/" . $modelname . "Form.vue'));";
+        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
+
+
         $this->output->info('Adding Vue: '.$addvue );
 
         # $model_singular
 
 
         // ### ROUTES ###
-        $addroute = 'Route::resource(\'/'.$model_singular.'\', \''.$this->controllerName.'Controller\');';
+
+        $addroute = 'Route::get(\'/api-'.$this->viewFolderName.'\', \''.$this->controllerName.'Api@index\');';
         $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
         $this->output->info('Adding Route: '.$addroute );
 
-        $addroute = 'Route::get(\'/api-'.$model_singular.'\', \''.$this->controllerName.'Api@index\');';
+        $addroute = 'Route::get(\'/api-'.$this->viewFolderName.'/options\', \''.$this->controllerName.'Api@getOptions\');';
+        $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
+        $this->output->info('Adding Route: '.$addroute );
+
+
+        $addroute = 'Route::get(\'/'.$this->viewFolderName.'/download\', \''.$this->controllerName.'Controller@download\');';
+        $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
+        $this->output->info('Adding Route: '.$addroute );
+
+        $addroute = 'Route::resource(\'/'.$this->viewFolderName.'\', \''.$this->controllerName.'Controller\');';
         $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
         $this->output->info('Adding Route: '.$addroute );
 
@@ -148,6 +194,14 @@ class CrudGeneratorService
 
     }
 
+    protected function makeGridColumns($columns) {
+        $columns = collect($columns);
+        $grid_columns = $this->gridColumns;
+        return $columns->filter(function ($value, $key) use ($grid_columns) {
+            return in_array($value['name'],$grid_columns);
+        })->all();
+
+    }
 
     protected function getColumns($tablename) {
         $dbType = DB::getDriverName();
@@ -193,6 +247,7 @@ class CrudGeneratorService
                 case 'modified':
                 case 'updated_at':
                 case 'modified_by':
+                case 'purged_by':
                 case 'wid':
                 break;
 
@@ -204,22 +259,22 @@ class CrudGeneratorService
                     break;
 
                 default:
-                    
+
                     switch ( $type ) {
                         case 'text':
-                            $validation = "string";
+                            $validation = "nullable|string";
                             if ( $size ) $validation .= "|max:$size";
                             break;
                         case 'number':
-                            $validation = "numeric";
+                            $validation = "nullable|numeric";
                             break;
                         case 'date':
-                            $validation = "date";
+                            $validation = "nullable|date";
                             if ( $size ) $validation .= "|max:$size";
                             break;
                         default:
-                            $validation = "string";
-                            var_dump($size);
+                            $validation = "nullable|string";
+
                             if ( $size ) $validation .= "|max:$size";
                             break;
                     }
@@ -232,8 +287,6 @@ class CrudGeneratorService
             }
 
         }
-print_r($cadd);
-
 
         return $ret;
     }
@@ -257,9 +310,9 @@ print_r($cadd);
 //            $this->output->info('Custom table name: '.$prefix.$table_name);
 //            $this->appendToEndOfFile(app_path().'/'.$modelname.'.php', "    protected \$table = '".$table_name."';\n\n}", 2);
 //        }
-        
 
-        $columns = $this->getColumns($prefix.($table_name ?: strtolower(str_plural($modelname))));
+
+        $columns = $this->getColumns($table_name);
 
 //        $cc = collect($columns);
 //
@@ -279,13 +332,13 @@ print_r($cadd);
                 base_path().'/resources/views/'.str_plural($tablename).'/show.blade.php',
             ];
         if(!$existing_model) {
-            $todelete[] = app_path().'/'.ucfirst(str_singular($tablename)).'.php'; 
+            $todelete[] = app_path().'/'.ucfirst(str_singular($tablename)).'.php';
         }
         foreach($todelete as $path) {
-            if(file_exists($path)) { 
-                unlink($path);    
+            if(file_exists($path)) {
+                unlink($path);
                 $this->output->info('Deleted: '.$path);
-            }   
+            }
         }
     }
 
@@ -293,7 +346,7 @@ print_r($cadd);
         $content = file_get_contents($path);
         if(!str_contains($content, $text) || !$dont_add_if_exist) {
             $newcontent = substr($content, 0, strlen($content)-$remove_last_chars).$text;
-            file_put_contents($path, $newcontent);    
+            file_put_contents($path, $newcontent);
         }
     }
 }

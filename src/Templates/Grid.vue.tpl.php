@@ -3,23 +3,18 @@
         <div v-if="global_error_message" class="alert alert-danger" role="alert">
             {{ global_error_message }}
         </div>
+        <div v-if="server_message !== false" class="alert alert-danger" role="alert">
+            {{ this.server_message}} <a v-if="try_logging_in" href="/login">Login</a>
+        </div>
         <!-- Grid Actions Top -->
         <div class="grid-top row mb-0 align-items-center">
             <div class="col-lg-8 mb-2">
                 <form class="form-inline mb-0">
                     <a href="#" @click.default="goToNew" class="btn btn-primary mb-3 mb-sm-2 mr-3">Add</a>
-                    <div class="input-group mb-0 mr-2">
-                        <label for="grid-filter-dropdown" class="mb-2 mr-2 pt-2 pt-sm-0">
-                            Search by
-                        </label>
-                        <select id="grid-filter-dropdown" class="form-control mb-2">
-                            <option value="name">Name</option>
-                        </select>
-                    </div>
-                    <div class="input-group mb-0">
-                        <label for="grid-filter-query-copy" class="mb-2 mr-2 pt-2 pt-sm-0">
-                            Search
-                        </label>
+                    <search-form-group
+                            class="mb-0"
+                            :errors="form_errors.keyword"
+                            label="Search">
                         <input
                                 name="query"
                                 id="grid-filter-query-copy"
@@ -29,7 +24,7 @@
                                 type="text"
                                 placeholder="Name search"
                                 aria-label="Name search">
-                    </div>
+                    </search-form-group>
                 </form>
             </div>
             <div class="col-lg-4 text-lg-right mb-2">
@@ -42,9 +37,8 @@
             <table class="table table-striped table-hover mb-0">
                 <thead>
                 <tr>
-                    [[foreach:columns]]
+                    [[foreach:grid_columns]]
                     <ss-grid-column-header
-                            style="width: 50%;"
                             v-on:selectedSort="sortColumn"
                             v-bind:selectedKey="sortKey"
                             title="Sort by [[i.display]]"
@@ -52,7 +46,7 @@
                             sortField: '[[i.name]]',
                             InitialSortOrder: 'asc',
                         }">
-                        Name
+                        [[i.display]]
                     </ss-grid-column-header>
                     [[endforeach]]
                     <th style="width:20%;" class="text-center">Actions</th>
@@ -60,7 +54,7 @@
                 </thead>
                 <tbody>
                 <tr v-if="gridState == 'wait'">
-                    <td colspan="4" style=" height: 475px;">
+                    <td colspan="[[number_of_grid_columns]]" style=" height: 475px;">
                         <div class="alert alert-info"
                              style="font-size: 2em;   vertical-align: middle;   text-align: center; margin-top: 160px;"
                              role="alert">Please wait.
@@ -68,34 +62,34 @@
                     </td>
                 </tr>
                 <tr v-if="gridState == 'error'">
-                    <td colspan="4" style=" height: 475px;">
+                    <td colspan="[[number_of_grid_columns]]" style=" height: 475px;">
                         <div class="alert alert-warning"
-                             style="font-size: 2em;   vertical-align: middle;   text-align: center; margin-top: 160px;"
-                             role="alert">No matching records were found.
-                        </div>
-                    </td>
-                </tr>
-                <tr v-if="gridState != 'wait' && !gridData.length">
-                    <td colspan="4" style=" height: 475px;">
-                        <div class="alert alert-danger"
                              style="font-size: 2em;   vertical-align: middle;   text-align: center; margin-top: 160px;"
                              role="alert">Error please try again.
                         </div>
                     </td>
                 </tr>
 
+                <tr v-if="gridState == 'good' && !gridData.length">
+                    <td colspan="[[number_of_grid_columns]]" style=" height: 475px;">
+                        <div class="alert alert-warning"
+                             style="font-size: 2em;   vertical-align: middle;   text-align: center; margin-top: 160px;"
+                             role="alert">No matching records found.
+                        </div>
+                    </td>
+                </tr>
+
                 <tr v-else v-for="row in this.gridData" :key="row.id">
-                    [[foreach:columns]]
+                    [[foreach:grid_columns]]
                     [[if:i.name=='name']]
                     <td data-title="[[i.display]]">
-                        <a
-                                v-bind:href="'/[[model_singular]]/' + row.id"
-                                v-if="(params.CanShow == '1')">
+                        <a v-bind:href="'/[[view_folder]]/' + row.id"
+                           v-if="(params.CanShow == '1')">
                             {{ row.[[i.name]] }}
                         </a>
                         <span v-if="(params.CanShow != '1')">
                                         {{ row.[[i.name]] }}
-                                    </span>
+                        </span>
                     </td>
                     [[endif]]
                     [[if:i.name!='name']]
@@ -103,10 +97,9 @@
                     [[endif]]
                     [[endforeach]]
                     <td data-title="Actions" class="text-lg-center text-nowrap">
-                        <a
-                                v-bind:href="'/[[model_singular]]/' + row.id + '/edit'"
-                                v-if="(params.CanEdit == '1')"
-                                class="grid-action-item">
+                        <a v-bind:href="'/[[view_folder]]/' + row.id + '/edit'"
+                           v-if="(params.CanEdit)"
+                           class="grid-action-item">
                             Edit
                         </a>
                     </td>
@@ -118,7 +111,7 @@
         <!-- Grid Actions Bottom -->
         <div class="grid-bottom row mb-0 align-items-center">
             <div class="col-lg-4 mb-2">
-                <a href="/[[model_singular]]/download" class="btn btn-primary mb-2 mr-2">Export to Excel</a>
+                <a href="/[[view_folder]]/download" class="btn btn-primary mb-2 mr-2">Export to Excel</a>
                 <a href="#TODO" class="btn btn-primary mb-2 mr-2">Print PDF</a>
             </div>
             <ss-grid-pagination class="col-lg-4 mb-2"
@@ -143,6 +136,7 @@
     import SsGridPaginationLocation from "./SsPaginationLocation";
 
     export default {
+        name: '[[view_folder]]-grid',
         components: {SsGridColumnHeader, SsGridPaginationLocation, SsGridPagination},
         props: {
             'params': {
@@ -173,14 +167,24 @@
                 sortOrder: this.params.sortOrder,
                 sortKey: this.params.sortKey,
 
-                global_error_message: null
+                global_error_message: null,
+
+
+                form_errors: {
+                    page: false,
+                    keyword: false,
+                    column: false,
+                    direction: false,
+                },
+                server_message: false,
+                try_logging_in: false,
             }
         },
 
         methods: {
 
             goToNew: function () {
-                window.location.href = '/[[model_singular]]/create';
+                window.location.href = '/[[view_folder]]/create';
             },
 
             sortColumn: function (obj) {
@@ -205,31 +209,47 @@
                 if (getPage != null) {    // We have a filter
                     axios.get(getPage)
                         .then(responce => {
-                            this.gridData = responce.data.data;
-                            this.total = responce.data.total;
-                            this.current_page = responce.data.current_page;
-                            this.last_page = (responce.data.last_page || 1);
+                            if (responce.status === 200) {
+                                Object.keys(this.form_errors).forEach(i => this.form_errors[i] = false);
+                                this.gridData = responce.data.data;
+                                this.total = responce.data.total;
+                                this.current_page = responce.data.current_page;
+                                this.last_page = (responce.data.last_page || 1);
+                            } else {
+                                this.server_message = res.status;
+                            }
                             this.gridState = 'good';
-                        })
-                        .catch(error => {
-                            if (error.response && error.response.status == 422
-                            ) {
-                                this.fld_errors = error.response.data.errors;
-                            }
-                            else {
+                        }).catch(error => {
+                            if (error.response) {
                                 this.gridState = 'error';
-                                this.global_error_message = 'Error, please try again. If error persists please report.'
+                                if (error.response.status === 422) {
+                                    // Clear errors out
+                                    Object.keys(this.form_errors).forEach(i => this.form_errors[i] = false);
+                                    // Set current errors
+                                    Object.keys(error.response.data.errors).forEach(i => this.form_errors[i] = error.response.data.errors[i]);
+                                } else if (error.response.status === 404) {  // Record not found
+                                    this.server_message = 'Record not found';
+                                    window.location = '/[[route_path]]';
+                                } else if (error.response.status === 419) {  // Unknown status
+                                    this.server_message = 'Unknown Status, please try to ';
+                                    this.try_logging_in = true;
+                                } else if (error.response.status === 500) {  // Unknown status
+                                    this.server_message = 'Server Error, please try to ';
+                                    this.try_logging_in = true;
+                                } else {
+                                    this.server_message = error.response.data.message;
+                                }
+                            } else {
+                                console.log(error.response);
+                                this.server_message = error;
                             }
-
-                        }).then(() => {
-                        }
-                    );
+                    });
                 }
             },
 
             getDataUrl: function (new_page_number) {
 
-                var url = 'api-[[model_singular]]?';
+                var url = 'api-[[view_folder]]?';
                 var queryParams = [];
 
                 queryParams.push('page=' + new_page_number);

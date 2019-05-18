@@ -5,15 +5,18 @@ namespace [[appns]]Http\Controllers;
 use [[appns]][[model_uc]];
 use Illuminate\Http\Request;
 use [[appns]]Http\Controllers\Controller;
+use [[appns]]Http\Requests\[[model_uc]]IndexRequest;
 
-class [[controller_name]]Api extends Controller
+class [[model_uc]]Api extends Controller
 {
+
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index([[model_uc]]IndexRequest $request)
     {
 
         $page = $request->get('page', '1');                // Pagination looks at the request
@@ -35,6 +38,15 @@ class [[controller_name]]Api extends Controller
         $column = $column ? mb_strtolower($column) : 'name';
 
         return [[model_uc]]::filteredData(10, $column, $direction, $keyword);
+    }
+
+    /**
+     * Returns "options" for HTML select
+     * @return array
+     */
+    public function getOptions() {
+
+        return [[model_uc]]::getOptions();
     }
 
     /**

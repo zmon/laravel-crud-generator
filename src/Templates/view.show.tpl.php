@@ -1,21 +1,20 @@
 @extends('layouts.master')
-
-@section('title')
-
-<title>Show [[model_uc]]</title>
-
-@endsection
-
-@section('header')
-
-<ol class='breadcrumb'>
-    <li><a href='/[[route_path]]'>[[model_uc]]</a></li>
-    <li class='active'>Show</li>
+@php $nav_path = ['[[route_path]]']; @endphp
+@section('page-title')
+View {{$[[model_singular]]->name}}
+@stop
+@section('page-header-breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('[[view_folder]].index') }}">[[display_name_singular]]</a></li>
+    <li class="breadcrumb-item active" aria-current="location">{{$[[model_singular]]->name}}</li>
 </ol>
 
-<h2>Show [[model_uc]]</h2>
+@stop
+@section('page-header-title')
+View [[display_name_singular]]
 
-@endsection
+@stop
 
 @section('content')
 
@@ -44,6 +43,5 @@
 
     </div>
 </div>
-
 
 @endsection
