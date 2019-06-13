@@ -11,6 +11,8 @@ class [[model_uc]]Export implements FromQuery, WithHeadings, WithMapping
 {
     use Exportable;
 
+    protected $dataQuery = null;
+
     public function __construct($dataQuery)
     {
         $this->dataQuery = $dataQuery;

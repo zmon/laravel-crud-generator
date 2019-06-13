@@ -21,7 +21,8 @@
             <div class="row">
                 <div class="col-md-6">
                     <button type="submit" class="btn btn-primary btn-sm">
-                        Change
+                        <span v-if="this.form_data.id">Change</span>
+                        <span v-else="this.form_data.id">Add</span>
                     </button>
                 </div>
                 <div class="col-md-6 text-right">
@@ -54,25 +55,25 @@
                     _token: this.csrf_token,
 [[foreach:columns]]
   [[if:i.type=='id']]
-    [[i.name]]: 0,
+                    [[i.name]]: 0,
   [[endif]]
   [[if:i.type=='text']]
-    [[i.name]]: '',
+                    [[i.name]]: '',
   [[endif]]
   [[if:i.type=='number]]
-    [[i.name]]: 0,
+                    [[i.name]]: 0,
   [[endif]]
   [[if:i.type=='date']]
-    [[i.name]]: null,
+                    [[i.name]]: null,
   [[endif]]
   [[if:i.type=='unknown']]
-    [[i.name]]: '',
+                    [[i.name]]: '',
   [[endif]]
 [[endforeach]]
                 },
                 form_errors: {
 [[foreach:columns]]
-[[i.name]]: false,
+                [[i.name]]: false,
 [[endforeach]]
                 },
                 server_message: false,

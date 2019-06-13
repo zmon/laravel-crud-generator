@@ -8,13 +8,15 @@ use [[appns]]Http\Middleware\TrimStrings;
 use [[appns]][[model_uc]];
 use Illuminate\Http\Request;
 
-use [[appns]]Http\Requests\[[model_uc]]Request;
+use [[appns]]Http\Requests\[[model_uc]]FormRequest;
+use [[appns]]Http\Requests\[[model_uc]]IndexRequest;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 use App\Exports\[[model_uc]]Export;
 use Maatwebsite\Excel\Facades\Excel;
+//use PDF; // TCPDF, not currently in use
 
 class [[model_uc]]Controller extends Controller
 {
@@ -70,11 +72,11 @@ class [[model_uc]]Controller extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index([[model_uc]]IndexRequest $request)
     {
 
         if (!Auth::user()->can('[[model_singular]] index')) {
-            \Session::flash('flash_error_message', 'You do not have access to [[display_name_singular]]');
+            \Session::flash('flash_error_message', 'You do not have access to [[display_name_singular]]s.');
             return Redirect::route('home');
         }
 
@@ -103,9 +105,13 @@ class [[model_uc]]Controller extends Controller
 	public function create()
 	{
 
-        if (!Auth::user()->can('[[model_singular]] add')) {
-            \Session::flash('flash_error_message', 'You do not have access to add a [[display_name_singular]]');
-            return Redirect::route('home');
+        if (!Auth::user()->can('[[model_singular]] add')) {  // TODO: add -> create
+            \Session::flash('flash_error_message', 'You do not have access to add a [[display_name_singular]].');
+            if (Auth::user()->can('vc_vendor index')) {
+                return Redirect::route('[[view_folder]].index');
+            } else {
+                return Redirect::route('home');
+            }
         }
 
 	    return view('[[view_folder]].create');
@@ -118,7 +124,7 @@ class [[model_uc]]Controller extends Controller
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store([[model_uc]]Request $request)
+    public function store([[model_uc]]FormRequest $request)
     {
 
         $[[model_singular]] = new \App\[[model_uc]];
@@ -149,14 +155,20 @@ class [[model_uc]]Controller extends Controller
     {
 
         if (!Auth::user()->can('[[model_singular]] view')) {
-            \Session::flash('flash_error_message', 'You do not have access to add a [[display_name_singular]]');
-            return Redirect::route('home');
+            \Session::flash('flash_error_message', 'You do not have access to view a [[display_name_singular]].');
+            if (Auth::user()->can('vc_vendor index')) {
+                return Redirect::route('[[view_folder]].index');
+            } else {
+                return Redirect::route('home');
+            }
         }
 
-        if ($[[model_singular]] = $this->find($id)) {
-            return view('[[view_folder]].show', compact('[[model_singular]]'));
+        if ($[[model_singular]] = $this->sanitizeAndFind($id)) {
+            $can_edit = Auth::user()->can('[[model_singular]] edit');
+            $can_delete = Auth::user()->can('[[model_singular]] delete');
+            return view('[[view_folder]].show', compact('[[model_singular]]','can_edit', 'can_delete'));
         } else {
-            \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to display');
+            \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to display.');
             return Redirect::route('[[view_folder]].index');
         }
     }
@@ -170,14 +182,18 @@ class [[model_uc]]Controller extends Controller
     public function edit($id)
     {
         if (!Auth::user()->can('[[model_singular]] edit')) {
-            \Session::flash('flash_error_message', 'You do not have access to add a [[display_name_singular]]');
-            return Redirect::route('home');
+            \Session::flash('flash_error_message', 'You do not have access to edit a [[display_name_singular]].');
+            if (Auth::user()->can('vc_vendor index')) {
+                return Redirect::route('[[view_folder]].index');
+            } else {
+                return Redirect::route('home');
+            }
         }
 
-        if ($[[model_singular]] = $this->find($id)) {
+        if ($[[model_singular]] = $this->sanitizeAndFind($id)) {
             return view('[[view_folder]].edit', compact('[[model_singular]]'));
         } else {
-            \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to edit');
+            \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to edit.');
             return Redirect::route('[[view_folder]].index');
         }
 
@@ -190,9 +206,19 @@ class [[model_uc]]Controller extends Controller
      * @param  \App\[[model_uc]] $[[model_singular]]
      * @return \Illuminate\Http\Response
      */
-    public function update([[model_uc]]Request $request, $id)
+    public function update([[model_uc]]FormRequest $request, $id)
     {
-        if (!$[[model_singular]] = $this->find($id)) {
+
+//        if (!Auth::user()->can('[[model_singular]] update')) {
+//            \Session::flash('flash_error_message', 'You do not have access to update a [[display_name_singular]].');
+//            if (!Auth::user()->can('[[model_singular]] index')) {
+//                return Redirect::route('[[view_folder]].index');
+//            } else {
+//                return Redirect::route('home');
+//            }
+//        }
+
+        if (!$[[model_singular]] = $this->sanitizeAndFind($id)) {
        //     \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to edit');
             return response()->json([
                 'message' => 'Not Found'
@@ -229,25 +255,35 @@ class [[model_uc]]Controller extends Controller
      */
     public function destroy($id)
     {
+
         if (!Auth::user()->can('[[model_singular]] delete')) {
-            \Session::flash('flash_error_message', 'You do not have access to remove a [[display_name_singular]]');
-            if (!Auth::user()->can('[[model_singular]] index')) {
+            \Session::flash('flash_error_message', 'You do not have access to remove a [[display_name_singular]].');
+            if (Auth::user()->can('[[model_singular]] index')) {
                  return Redirect::route('[[view_folder]].index');
             } else {
                 return Redirect::route('home');
             }
         }
 
-        $[[model_singular]] = $this->find($id);
-        if ( $[[model_singular]]) {
-            $[[model_singular]]->delete();
+        $[[model_singular]] = $this->sanitizeAndFind($id);
+
+        if ( $[[model_singular]]  && $[[model_singular]]->canDelete()) {
+
+            try {
+                $[[model_singular]]->delete();
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Unable to process request.'
+                ], 400);
+            }
+
             \Session::flash('flash_success_message', 'Invitation for ' . $[[model_singular]]->name . ' was removed.');
         } else {
-            \Session::flash('flash_error_message', 'Unable to find Invite to delete');
+            \Session::flash('flash_error_message', 'Unable to find Invite to delete.');
 
         }
 
-        if (!Auth::user()->can('[[model_singular]] index')) {
+        if (Auth::user()->can('[[model_singular]] index')) {
              return Redirect::route('[[view_folder]].index');
         } else {
             return Redirect::route('home');
@@ -262,7 +298,7 @@ class [[model_uc]]Controller extends Controller
      * @param $id
      * @return [[model_uc]] or null
      */
-    private function find($id)
+    private function sanitizeAndFind($id)
     {
         return \App\[[model_uc]]::find(intval($id));
     }
@@ -272,8 +308,12 @@ class [[model_uc]]Controller extends Controller
     {
 
         if (!Auth::user()->can('[[model_singular]] excel')) {
-            \Session::flash('flash_error_message', 'You do not have access to download [[display_name_singular]]');
-            return Redirect::route('home');
+            \Session::flash('flash_error_message', 'You do not have access to download [[display_name_singular]].');
+            if (Auth::user()->can('[[model_singular]] index')) {
+                return Redirect::route('[[view_folder]].index');
+            } else {
+                return Redirect::route('home');
+            }
         }
 
         // Remember the search parameters, we saved them in the Query
@@ -294,14 +334,76 @@ class [[model_uc]]Controller extends Controller
         // TODO: is it possible to do 0 check before query executes somehow? i think the query would have to be executed twice, once for count, once for excel library
         return Excel::download(
             new [[model_uc]]Export($dataQuery),
-            '[[view_folder]].xlsx'
-        );
+            '[[view_folder]].xlsx');
 
-        //} else {
-        //    \Session::flash('flash_error_message', 'There are no organizations to download.');
-        //    return Redirect::route('organization.index');
-        //}
+    }
 
+
+        public function print()
+{
+        if (!Auth::user()->can('[[model_singular]] export-pdf')) { // TODO: i think these permissions may need to be updated to match initial permissions?
+            \Session::flash('flash_error_message', 'You do not have access to print [[display_name_singular]]');
+            if (Auth::user()->can('[[model_singular]] index')) {
+                return Redirect::route('[[view_folder]].index');
+            } else {
+                return Redirect::route('home');
+            }
+        }
+
+        // Remember the search parameters, we saved them in the Query
+        $search = session('[[model_singular]]_keyword', '');
+        $column = session('[[model_singular]]_column', 'name');
+        $direction = session('[[model_singular]]_direction', '-1');
+        $column = $column ? $column : 'name';
+
+        info(__METHOD__ . ' line: ' . __LINE__ . " $column, $direction, $search");
+
+        // Get query data
+        $columns = [
+[[foreach:grid_columns]]
+            '[[i.name]]',
+[[endforeach]]
+        ];
+        $dataQuery = [[model_uc]]::pdfDataQuery($column, $direction, $search, $columns);
+        $data = $dataQuery->get();
+
+        // Pass it to the view for html formatting:
+        $printHtml = view('[[view_folder]].print', compact( 'data' ) );
+
+        // Begin DOMPDF/laravel-dompdf
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->setPaper('a4', 'landscape');
+        $pdf->setOptions(['isPhpEnabled' => TRUE]);
+        $pdf->loadHTML($printHtml);
+        $currentDate = new \DateTime(null, new \DateTimeZone('America/Chicago'));
+        return $pdf->stream('[[view_folder]]-' . $currentDate->format('Ymd_Hi') . '.pdf');
+
+        /*
+        ///////////////////////////////////////////////////////////////////////
+        /// Begin TCPDF/tcpdf-laravel test - keeping for reference
+        // NOTE: you'll need to uncomment the use at the top for "PDF"
+        PDF::SetTitle('Vendors');
+        PDF::SetAutoPageBreak(TRUE, 15);
+        PDF::SetMargins(PDF_MARGIN_LEFT, 15, PDF_MARGIN_RIGHT, 15);
+        PDF::SetFooterMargin(PDF_MARGIN_FOOTER);
+        PDF::setHeaderCallback(function($pdf){
+            $currentDate = new \DateTime();
+            $currentDate->setTimezone(new \DateTimeZone('America/Chicago'));
+            $pdf->Cell(0,10,'Date ' . $currentDate->format('Y-m-d g:ia'),0,false,'C',0,'',0,false,'T','M');
+        });
+        PDF::setFooterCallback(function($pdf){
+            //$pdf->SetY(-15);
+            //var_dump(get_class_methods('Elibyy\TCPDF\TCPDFHelper')); exit;
+            $pdf->Cell(0,10,'Page ' . $pdf->getAliasNumPage().'/'.$pdf->getAliasNbPages(),0,false,'C',0,'',0,false,'T','M');
+        });
+        PDF::AddPage('L'); // Landscape
+        //var_dump($dataQuery->get()); exit;
+        //var_dump(get_class_methods('App\Exports\VcVendorExport')); exit; // query headings map download store queue toResponse
+        PDF::writeHTML($html);
+        PDF::Output('vc-vendor.pdf');
+        /// End TCPDF/tcpdf-laravel test
+        ///////////////////////////////////////////////////////////////////////
+        */
     }
 
 }

@@ -14,7 +14,7 @@ class [[model_uc]]IndexRequest extends FormRequest
      */
     public function authorize()
     {
-        return Auth::user()->can('[[model_singular]] index');
+        return true;  // Authorization is being done in the controler  [[model_uc]]Controller::index()
     }
 
     /**

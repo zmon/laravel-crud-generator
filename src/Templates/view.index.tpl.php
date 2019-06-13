@@ -5,11 +5,11 @@
 @section('page-header-breadcrumbs')
 <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-    <li class="breadcrumb-item active" aria-current="location">[[display_name_singular]]</li>
+    <li class="breadcrumb-item active" aria-current="location">[[display_name_plural]]</li>
 </ol>
 @stop
 @section('page-header-title')
-[[display_name_singular]]
+[[display_name_plural]]
 
 @stop
 

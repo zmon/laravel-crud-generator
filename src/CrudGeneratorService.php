@@ -50,6 +50,7 @@ class CrudGeneratorService
 
         $options = [
             'display_name_singular' => $this->displayName,
+            'display_name_plural' => str_plural($this->displayName),
             'model_uc' => $modelname,
             'model_uc_plural' => str_plural($modelname),
             'model_singular' => $model_singular,
@@ -63,7 +64,7 @@ class CrudGeneratorService
             'appns' => $this->appNamespace,
             'display_uc_plural' => str_plural($modelname),
             'display_singular' => $modelname,
-            'display_singular' => $modelname,
+
 
         ];
 
@@ -86,7 +87,7 @@ class CrudGeneratorService
         $options['first_column_nonid'] = count($columns) > 1 ? $columns[1]['name'] : '';
         $options['num_columns'] = count($columns);
 
-        // dd($options);
+        dump($options);
 
 
         //###############################################################################
@@ -112,8 +113,12 @@ class CrudGeneratorService
         $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'IndexRequest.php';
         $filegenerator->Generate();
 
-        $filegenerator->templateName = 'Request';
-        $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'Request.php';
+        $filegenerator->templateName = 'exports';
+        $filegenerator->path = app_path().'/Exports/'.$modelname.'Export.php';
+        $filegenerator->Generate();
+
+        $filegenerator->templateName = 'FormRequest';
+        $filegenerator->path = app_path().'/Http/Requests/'.$modelname.'FormRequest.php';
         $filegenerator->Generate();
 
         $filegenerator->templateName = 'model';
@@ -136,13 +141,20 @@ class CrudGeneratorService
         $filegenerator->path = base_path().'/resources/views/'.$this->viewFolderName.'/index.blade.php';
         $filegenerator->Generate();
 
+        $filegenerator->templateName = 'view.print';
+        $filegenerator->path = base_path().'/resources/views/'.$this->viewFolderName.'/print.blade.php';
+        $filegenerator->Generate();
+
         $filegenerator->templateName = 'Grid.vue';
         $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Grid.vue';
         $filegenerator->Generate();
+        exec("prettier --write " . base_path().'/resources/js/components/'.$modelname.'Grid.vue');
 
         $filegenerator->templateName = 'Form.vue';
         $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Form.vue';
         $filegenerator->Generate();
+        exec("prettier --write " . base_path().'/resources/js/components/'.$modelname.'Form.vue');
+
 
 
 
@@ -179,8 +191,11 @@ class CrudGeneratorService
         $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
         $this->output->info('Adding Route: '.$addroute );
 
+        $addroute = 'Route::get(\'/'.$this->viewFolderName.'/download\', \''.$this->controllerName.'Controller@download\')->name(\''.$this->viewFolderName.'.download\');';
+        $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
+        $this->output->info('Adding Route: '.$addroute );
 
-        $addroute = 'Route::get(\'/'.$this->viewFolderName.'/download\', \''.$this->controllerName.'Controller@download\');';
+        $addroute = 'Route::get(\'/'.$this->viewFolderName.'/print\', \''.$this->controllerName.'Controller@print\')->name(\''.$this->viewFolderName.'.print\');';
         $this->appendToEndOfFile(base_path().'/routes/web.php', "\n".$addroute, 0, true);
         $this->output->info('Adding Route: '.$addroute );
 

@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class [[model_uc]] extends Model
 {
+
+    use SoftDeletes;
 
     /**
      * fillable - attributes that can be mass-assigned
@@ -41,6 +44,12 @@ class [[model_uc]] extends Model
         return true;
     }
 
+    public function canDelete()
+    {
+        return true;
+    }
+
+
     /**
      * Get Grid/index data PAGINATED
      *
@@ -50,14 +59,19 @@ class [[model_uc]] extends Model
      * @param string $keyword
      * @return mixed
      */
-    static function filteredData(
+    static function indexData(
         $per_page,
         $column,
         $direction,
         $keyword = '')
     {
-        return self::buildBaseGridQuery($column, $direction, $keyword)
-            ->paginate($per_page);
+        return self::buildBaseGridQuery($column, $direction, $keyword,
+            [ 'id',
+[[foreach:grid_columns]]
+                    '[[i.name]]',
+[[endforeach]]
+            ])
+        ->paginate($per_page);
     }
 
 
@@ -72,13 +86,15 @@ class [[model_uc]] extends Model
      * @param $column
      * @param $direction
      * @param string $keyword
+     * @param string|array $columns
      * @return mixed
      */
 
     static function buildBaseGridQuery(
         $column,
         $direction,
-        $keyword = '')
+        $keyword = '',
+        $columns = '*')
     {
         // Map sort direction from 1/-1 integer to asc/desc sql keyword
         switch ($direction) {
@@ -90,7 +106,7 @@ class [[model_uc]] extends Model
                 break;
         }
 
-        $query = [[model_uc]]::select('*')
+        $query = [[model_uc]]::select($columns)
         ->orderBy($column, $direction);
 
         if ($keyword) {
@@ -112,14 +128,34 @@ class [[model_uc]] extends Model
     static function exportDataQuery(
         $column,
         $direction,
-        $keyword = '')
+        $keyword = '',
+        $columns = '*')
     {
 
         info(__METHOD__ . ' line: ' . __LINE__ . " $column, $direction, $keyword");
 
-        return self::buildBaseGridQuery($column, $direction, $keyword);
+        return self::buildBaseGridQuery($column, $direction, $keyword, $columns);
 
     }
+
+        static function pdfDataQuery(
+            $column,
+            $direction,
+            $keyword = '',
+            $columns = '*')
+        {
+
+            info(__METHOD__ . ' line: ' . __LINE__ . " $column, $direction, $keyword");
+
+            return self::buildBaseGridQuery($column, $direction, $keyword,
+                [ 'id',
+[[foreach:grid_columns]]
+                    '[[i.name]]',
+[[endforeach]]
+            ]);
+
+        }
+
 
     /**
      * Get "options" for HTML select tag

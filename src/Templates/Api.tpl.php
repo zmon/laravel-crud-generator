@@ -37,7 +37,7 @@ class [[model_uc]]Api extends Controller
         $keyword = $keyword != 'null' ? $keyword : '';
         $column = $column ? mb_strtolower($column) : 'name';
 
-        return [[model_uc]]::filteredData(10, $column, $direction, $keyword);
+        return [[model_uc]]::indexData(10, $column, $direction, $keyword);
     }
 
     /**

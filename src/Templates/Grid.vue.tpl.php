@@ -47,6 +47,7 @@
                             InitialSortOrder: 'asc',
                         }">
                         [[i.display]]
+
                     </ss-grid-column-header>
                     [[endforeach]]
                     <th style="width:20%;" class="text-center">Actions</th>
@@ -112,7 +113,7 @@
         <div class="grid-bottom row mb-0 align-items-center">
             <div class="col-lg-4 mb-2">
                 <a href="/[[view_folder]]/download" class="btn btn-primary mb-2 mr-2">Export to Excel</a>
-                <a href="#TODO" class="btn btn-primary mb-2 mr-2">Print PDF</a>
+                <a href="/[[view_folder]]/print" class="btn btn-primary mb-2 mr-2">Print PDF</a>
             </div>
             <ss-grid-pagination class="col-lg-4 mb-2"
                                 v-bind:current_page="current_page"
