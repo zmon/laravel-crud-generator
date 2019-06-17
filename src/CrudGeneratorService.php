@@ -155,6 +155,9 @@ class CrudGeneratorService
         $filegenerator->Generate();
         exec("prettier --write " . base_path().'/resources/js/components/'.$modelname.'Form.vue');
 
+        $filegenerator->templateName = 'ControllerTest';
+        $filegenerator->path = base_path().'/tests/Feature/'.$modelname.'ControllerTest.php';
+        $filegenerator->Generate();
 
 
 
