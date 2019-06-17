@@ -55,26 +55,23 @@
                 </thead>
                 <tbody>
                 <tr v-if="gridState == 'wait'">
-                    <td colspan="[[number_of_grid_columns]]" style=" height: 475px;">
+                    <td colspan="[[number_of_grid_columns]]" class="grid-alert">
                         <div class="alert alert-info"
-                             style="font-size: 2em;   vertical-align: middle;   text-align: center; margin-top: 160px;"
                              role="alert">Please wait.
                         </div>
                     </td>
                 </tr>
                 <tr v-if="gridState == 'error'">
-                    <td colspan="[[number_of_grid_columns]]" style=" height: 475px;">
+                    <td colspan="[[number_of_grid_columns]]" class="grid-alert">
                         <div class="alert alert-warning"
-                             style="font-size: 2em;   vertical-align: middle;   text-align: center; margin-top: 160px;"
                              role="alert">Error please try again.
                         </div>
                     </td>
                 </tr>
 
                 <tr v-if="gridState == 'good' && !gridData.length">
-                    <td colspan="[[number_of_grid_columns]]" style=" height: 475px;">
+                    <td colspan="[[number_of_grid_columns]]" class="grid-alert">
                         <div class="alert alert-warning"
-                             style="font-size: 2em;   vertical-align: middle;   text-align: center; margin-top: 160px;"
                              role="alert">No matching records found.
                         </div>
                     </td>

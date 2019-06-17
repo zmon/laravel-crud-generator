@@ -17,16 +17,16 @@
 [[endif]]
 [[endforeach]]
 
-        <div class="form-group">
+        <div class="form-group mt-4">
             <div class="row">
                 <div class="col-md-6">
-                    <button type="submit" class="btn btn-primary btn-sm">
+                    <button type="submit" class="btn btn-primary">
                         <span v-if="this.form_data.id">Change</span>
                         <span v-else="this.form_data.id">Add</span>
                     </button>
                 </div>
-                <div class="col-md-6 text-right">
-                    <a href="/[[route_path]]" class="btn btn-sm btn-default float-right">Cancel</a>
+                <div class="col-md-6 text-md-right mt-2 mt-md-0">
+                    <a href="/[[route_path]]" class="btn btn-default">Cancel</a>
                 </div>
             </div>
         </div>
