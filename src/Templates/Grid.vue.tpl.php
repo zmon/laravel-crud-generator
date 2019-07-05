@@ -206,13 +206,13 @@
 
                 if (getPage != null) {    // We have a filter
                     axios.get(getPage)
-                        .then(responce => {
-                            if (responce.status === 200) {
+                        .then(response => {
+                            if (response.status === 200) {
                                 Object.keys(this.form_errors).forEach(i => this.form_errors[i] = false);
-                                this.gridData = responce.data.data;
-                                this.total = responce.data.total;
-                                this.current_page = responce.data.current_page;
-                                this.last_page = (responce.data.last_page || 1);
+                                this.gridData = response.data.data;
+                                this.total = response.data.total;
+                                this.current_page = response.data.current_page;
+                                this.last_page = (response.data.last_page || 1);
                             } else {
                                 this.server_message = res.status;
                             }

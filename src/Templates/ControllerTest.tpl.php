@@ -25,7 +25,6 @@ use Spatie\Permission\Exceptions\RoleDoesNotExist;
  *
  * @package Tests\Feature
  */
-
 class [[model_uc]]ControllerTest extends TestCase
 {
 
@@ -330,7 +329,7 @@ class [[model_uc]]ControllerTest extends TestCase
         $user = $this->getRandomUser('super-admin');
 
         // act as the user we got and request the create_new_article route
-        $response  = $this->actingAs($user)->get(route('[[view_folder]].show',[ 'id' => 100]));
+        $response = $this->actingAs($user)->get(route('[[view_folder]].show',['id' => 100]));
 
         $response->assertSessionHas('flash_error_message','Unable to find [[display_name_singular]] to display.');
 
@@ -345,7 +344,7 @@ class [[model_uc]]ControllerTest extends TestCase
         $user = $this->getRandomUser('super-admin');
 
         // act as the user we got and request the create_new_article route
-        $response  = $this->actingAs($user)->get(route('[[view_folder]].edit',[ 'id' => 100]));
+        $response = $this->actingAs($user)->get(route('[[view_folder]].edit',['id' => 100]));
 
         $response->assertSessionHas('flash_error_message','Unable to find [[display_name_singular]] to edit.');
 
@@ -363,7 +362,7 @@ class [[model_uc]]ControllerTest extends TestCase
         $user = $this->getRandomUser('super-admin');
 
         // act as the user we got and request the create_new_article route
-        $response  = $this->actingAs($user)->get(route('[[view_folder]].create'));
+        $response = $this->actingAs($user)->get(route('[[view_folder]].create'));
 
         $response->assertStatus(200);
         $response->assertViewIs('[[view_folder]].create');
@@ -382,7 +381,7 @@ class [[model_uc]]ControllerTest extends TestCase
         $data = [
             'id' => "",
 [[foreach:grid_columns]]
-        '[[i.name]]' => "",
+            '[[i.name]]' => "",
 [[endforeach]]
         ];
 
@@ -411,7 +410,7 @@ class [[model_uc]]ControllerTest extends TestCase
         $data = [
             'id' => "",
 [[foreach:grid_columns]]
-        '[[i.name]]' => "a",
+            '[[i.name]]' => "a",
 [[endforeach]]
         ];
 
@@ -443,10 +442,10 @@ class [[model_uc]]ControllerTest extends TestCase
         $data = [
 [[foreach:grid_columns]]
 [[if:i.name=='name']]
-    'name' => $faker->name,
+          'name' => $faker->name,
 [[endif]]
 [[if:i.name!='name']]
-        '[[i.name]]' => "",
+          '[[i.name]]' => "",
 [[endif]]
 [[endforeach]]
         ];
@@ -470,10 +469,9 @@ class [[model_uc]]ControllerTest extends TestCase
 
         $lastInsertedInTheDB = [[display_singular]]::orderBy('id', 'desc')->first();
 
-
 [[foreach:grid_columns]]
 
-    $this->assertEquals($lastInsertedInTheDB->[[i.name]], $data['[[i.name]]'], "the [[i.name]] of the saved [[model_singular]] is different from the input data");
+        $this->assertEquals($lastInsertedInTheDB->[[i.name]], $data['[[i.name]]'], "the [[i.name]] of the saved [[model_singular]] is different from the input data");
 
 [[endforeach]]
 
@@ -500,22 +498,19 @@ class [[model_uc]]ControllerTest extends TestCase
             'id' => "",
 [[foreach:grid_columns]]
 [[if:i.name=='name']]
-    'name' => $[[model_singular]]->name,
+            'name' => $[[model_singular]]->name,
 [[endif]]
 [[if:i.name!='name']]
-        '[[i.name]]' => "",
+            '[[i.name]]' => "",
 [[endif]]
 [[endforeach]]
         ];
-
-
 
         $response = $this->actingAs($user)->post(route('[[view_folder]].store'), $data);
         $response->assertStatus(302);
 
         $errors = session('errors');
         $this->assertEquals($errors->get('name')[0],"The name has already been taken.");
-
 
         $totalNumberOf[[display_uc_plural]]After = [[display_singular]]::count();
         $this->assertEquals($totalNumberOf[[display_uc_plural]]After, $totalNumberOf[[display_uc_plural]]Before, "the number of total [[model_singular]] should be the same ");
@@ -641,7 +636,7 @@ class [[model_uc]]ControllerTest extends TestCase
      * @param string $guard
      * @return mixed
      */
-    public function getRandomUser($role=null,$guard='web')
+    public function getRandomUser($role = null, $guard = 'web')
     {
 
         if ($role) {

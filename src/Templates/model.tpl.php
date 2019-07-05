@@ -147,12 +147,7 @@ class [[model_uc]] extends Model
 
             info(__METHOD__ . ' line: ' . __LINE__ . " $column, $direction, $keyword");
 
-            return self::buildBaseGridQuery($column, $direction, $keyword,
-                [ 'id',
-[[foreach:grid_columns]]
-                    '[[i.name]]',
-[[endforeach]]
-            ]);
+            return self::buildBaseGridQuery($column, $direction, $keyword, $columns);
 
         }
 

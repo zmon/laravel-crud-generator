@@ -20,7 +20,7 @@
         <div class="form-group mt-4">
             <div class="row">
                 <div class="col-md-6">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" :disabled="processing">
                         <span v-if="this.form_data.id">Change</span>
                         <span v-else="this.form_data.id">Add</span>
                     </button>
@@ -78,7 +78,7 @@
                 },
                 server_message: false,
                 try_logging_in: false,
-
+                processing: false,
             }
         },
         mounted() {
@@ -94,6 +94,7 @@
             async handleSubmit() {
 
                 this.server_message = false;
+                this.processing = true;
                 let url = '';
                 let amethod = '';
                 if (this.form_data.id) {
@@ -137,6 +138,7 @@
                             console.log(error.response);
                             this.server_message = error;
                         }
+                        this.processing = false;
                     });
             }
         },
