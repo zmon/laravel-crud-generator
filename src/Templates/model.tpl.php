@@ -104,6 +104,9 @@ class [[model_uc]] extends Model
             case '-1':
                 $direction = 'asc';
                 break;
+            default:
+                $direction = 'asc';
+                break;
         }
 
         $query = [[model_uc]]::select($columns)
