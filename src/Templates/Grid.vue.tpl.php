@@ -132,10 +132,11 @@
     import SsGridColumnHeader from "./SsGridColumnHeader";
     import SsGridPagination from "./SsGridPagination";
     import SsGridPaginationLocation from "./SsPaginationLocation";
+    import SearchFormGroup from "./SearchFormGroup";
 
     export default {
         name: '[[view_folder]]-grid',
-        components: {SsGridColumnHeader, SsGridPaginationLocation, SsGridPagination},
+        components: {SsGridColumnHeader, SsGridPaginationLocation, SsGridPagination, SearchFormGroup},
         props: {
             'params': {
                 type: Object,
