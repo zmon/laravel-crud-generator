@@ -27,11 +27,9 @@ class [[model_uc]]Controller extends Controller
      * Vue component example.
      *
         <ui-select-pick-one
-            label="My Label"
             url="/api-[[view_folder]]/options"
-            class="form-group"
             v-model="[[model_singular]]Selected"
-            v-on:input="getData">
+            :selected_id=[[model_singular]]Selected">
         </ui-select-pick-one>
      *
      *

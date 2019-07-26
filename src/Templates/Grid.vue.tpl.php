@@ -132,11 +132,10 @@
     import SsGridColumnHeader from "./SsGridColumnHeader";
     import SsGridPagination from "./SsGridPagination";
     import SsGridPaginationLocation from "./SsPaginationLocation";
-    import SearchFormGroup from "./SearchFormGroup";
 
     export default {
         name: '[[view_folder]]-grid',
-        components: {SsGridColumnHeader, SsGridPaginationLocation, SsGridPagination, SearchFormGroup},
+        components: {SsGridColumnHeader, SsGridPaginationLocation, SsGridPagination},
         props: {
             'params': {
                 type: Object,
@@ -147,10 +146,9 @@
 
         mounted: function () {
 
-            this.params.Page = (!isNaN(parseInt(this.params.Page))) ? parseInt(this.params.Page) : null;
+            this.current_page = (!isNaN(parseInt(this.params.Page))) ? parseInt(this.params.Page) : 1;
             this.query = this.params.Search;
-            this.current_page = this.params.Page;
-            this.getData(1);
+            this.getData(this.current_page);
         },
 
         data: function () {
@@ -159,7 +157,7 @@
                 gridState: 'wait',
                 query: this.params.Search,
                 gridData: [],
-                current_page: this.params.Page,
+                current_page: 1,
                 last_page: null,
                 total: null,
 

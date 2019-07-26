@@ -155,6 +155,12 @@ class CrudGeneratorService
         $filegenerator->Generate();
         exec("prettier --write " . base_path().'/resources/js/components/'.$modelname.'Form.vue');
 
+
+        $filegenerator->templateName = 'Show.vue';
+        $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Show.vue';
+        $filegenerator->Generate();
+        exec("prettier --write " . base_path().'/resources/js/components/'.$modelname.'Show.vue');
+
         $filegenerator->templateName = 'ControllerTest';
         $filegenerator->path = base_path().'/tests/Feature/'.$modelname.'ControllerTest.php';
         $filegenerator->Generate();
@@ -176,6 +182,9 @@ class CrudGeneratorService
         $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
 
         $addvue = "Vue.component('" . $this->viewFolderName . "-form', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-form\" */ './components/" . $modelname . "Form.vue'));";
+        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
+
+        $addvue = "Vue.component('" . $this->viewFolderName . "-show', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-Show\" */ './components/" . $modelname . "Show.vue'));";
         $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
 
 

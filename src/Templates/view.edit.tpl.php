@@ -15,5 +15,5 @@
     </ol>
 @endsection
 @section('content')
-    <[[view_folder]]-form csrf_token="{{ csrf_token() }}" :record='{!! json_encode($[[model_singular]],JSON_HEX_APOS) !!}'></[[view_folder]]-form>
+    <[[view_folder]]-form csrf_token="{{ csrf_token() }}" :record='@json($[[model_singular]])'></[[view_folder]]-form>
 @endsection

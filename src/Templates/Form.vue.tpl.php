@@ -5,16 +5,36 @@
             {{ this.server_message}}  <a v-if="try_logging_in" href="/login">Login</a>
         </div>
 [[foreach:columns]]
-[[if:i.type!='id']]
-        <div class="row">
-            <div class="col-md-9">
-                <std-form-group label="[[i.display]]" :errors="form_errors.[[i.name]]">
-                    <input type="text" class="form-control" name="[[i.name]]"
-                           v-model="form_data.[[i.name]]"/>
-                </std-form-group>
+
+        [[if:i.name=='name']]
+            <div class="row">
+                <div class="col-md-12">
+                    <std-form-group label="[[i.display]]" label-for="[[i.name]]" :errors="form_errors.[[i.name]]" :required="true">
+                        <fld-input
+                                name="[[i.name]]"
+                                v-model="form_data.[[i.name]]"
+                                required
+                        />
+                        <template slot="help">
+                            Name must be unique.
+                        </template>
+                    </std-form-group>
+                </div>
             </div>
-        </div>
-[[endif]]
+        [[endif]]
+        [[if:i.name!='name']]
+            <div class="row">
+                <div class="col-md-12">
+                    <std-form-group label="[[i.display]]" label-for="[[i.name]]" :errors="form_errors.[[i.name]]">
+                        <fld-input
+                                name="[[i.name]]"
+                                v-model="form_data.[[i.name]]"
+                        />
+                    </std-form-group>
+                </div>
+            </div>
+        [[endif]]
+
 [[endforeach]]
 
         <div class="form-group mt-4">

@@ -20,12 +20,12 @@ class [[model_uc]] extends Model
     ];
 
     protected $hidden = [
+        'active',
         'created_by',
         'modified_by',
         'purged_by',
         'created_at',
         'updated_at',
-        'deleted_at',
     ];
 
     public function add($attributes)

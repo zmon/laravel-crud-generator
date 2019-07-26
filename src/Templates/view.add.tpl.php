@@ -7,11 +7,11 @@
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        Add/Modify [[model_uc]]
+        BAD BAD BAD BAD Add/Modify [[model_uc]]
     </div>
 
     <div class="panel-body">
-                
+
         <form action="{{ url('/[[route_path]]'.( isset($model) ? "/" . $model->id : "")) }}" method="POST" class="form-horizontal">
             {{ csrf_field() }}
 
@@ -67,7 +67,7 @@
                 <div class="col-sm-offset-3 col-sm-6">
                     <button type="submit" class="btn btn-success">
                         <i class="fa fa-plus"></i> Save
-                    </button> 
+                    </button>
                     <a class="btn btn-default" href="{{ url('/[[route_path]]') }}"><i class="glyphicon glyphicon-chevron-left"></i> Back</a>
                 </div>
             </div>
