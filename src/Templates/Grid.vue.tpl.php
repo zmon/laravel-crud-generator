@@ -14,16 +14,16 @@
                     <search-form-group
                             class="mb-0"
                             :errors="form_errors.keyword"
-                            label="Search">
+                            label="Name"
+                            labelFor="keyword">
                         <input
-                                name="query"
-                                id="grid-filter-query-copy"
+                                name="keyword"
+                                id="field_keyword"
                                 v-model="query"
                                 @keyup="getData(1)"
                                 class="form-control mb-2"
                                 type="text"
-                                placeholder="Name search"
-                                aria-label="Name search">
+                                placeholder="Filter by name">
                     </search-form-group>
                 </form>
             </div>

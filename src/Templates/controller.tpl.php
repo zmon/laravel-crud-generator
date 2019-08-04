@@ -29,7 +29,8 @@ class [[model_uc]]Controller extends Controller
         <ui-select-pick-one
             url="/api-[[view_folder]]/options"
             v-model="[[model_singular]]Selected"
-            :selected_id=[[model_singular]]Selected">
+            :selected_id=[[model_singular]]Selected"
+            name="[[model_singular]]">
         </ui-select-pick-one>
      *
      *
