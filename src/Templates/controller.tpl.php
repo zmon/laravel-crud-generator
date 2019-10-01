@@ -55,13 +55,13 @@ class [[model_uc]]Controller extends Controller
      * Permissions
      *
 
-             Permission::create(['name' => '[[model_singular]] index']);
-             Permission::create(['name' => '[[model_singular]] add']);
-             Permission::create(['name' => '[[model_singular]] update']);
-             Permission::create(['name' => '[[model_singular]] view']);
-             Permission::create(['name' => '[[model_singular]] destroy']);
-             Permission::create(['name' => '[[model_singular]] export-pdf']);
-             Permission::create(['name' => '[[model_singular]] export-excel']);
+             Permission::findOrCreate('[[model_singular]] index');
+             Permission::findOrCreate('[[model_singular]] view');
+             Permission::findOrCreate('[[model_singular]] export-pdf');
+             Permission::findOrCreate('[[model_singular]] export-excel');
+             Permission::findOrCreate('[[model_singular]] add');
+             Permission::findOrCreate('[[model_singular]] edit');
+             Permission::findOrCreate('[[model_singular]] delete');
 
     */
 
@@ -106,7 +106,7 @@ class [[model_uc]]Controller extends Controller
 
         if (!Auth::user()->can('[[model_singular]] add')) {  // TODO: add -> create
             \Session::flash('flash_error_message', 'You do not have access to add a [[display_name_singular]].');
-            if (Auth::user()->can('vc_vendor index')) {
+            if (Auth::user()->can('[[model_singular]] index')) {
                 return Redirect::route('[[view_folder]].index');
             } else {
                 return Redirect::route('home');
@@ -136,7 +136,7 @@ class [[model_uc]]Controller extends Controller
             ], 400);
         }
 
-        \Session::flash('flash_success_message', 'Vc Vendor ' . $[[model_singular]]->name . ' was added');
+        \Session::flash('flash_success_message', '[[display_name_singular]] ' . $[[model_singular]]->name . ' was added.');
 
         return response()->json([
             'message' => 'Added record'
@@ -155,7 +155,7 @@ class [[model_uc]]Controller extends Controller
 
         if (!Auth::user()->can('[[model_singular]] view')) {
             \Session::flash('flash_error_message', 'You do not have access to view a [[display_name_singular]].');
-            if (Auth::user()->can('vc_vendor index')) {
+            if (Auth::user()->can('[[model_singular]] index')) {
                 return Redirect::route('[[view_folder]].index');
             } else {
                 return Redirect::route('home');
@@ -164,7 +164,7 @@ class [[model_uc]]Controller extends Controller
 
         if ($[[model_singular]] = $this->sanitizeAndFind($id)) {
             $can_edit = Auth::user()->can('[[model_singular]] edit');
-            $can_delete = Auth::user()->can('[[model_singular]] delete');
+            $can_delete = (Auth::user()->can('[[model_singular]] delete') && $[[model_singular]]->canDelete());
             return view('[[view_folder]].show', compact('[[model_singular]]','can_edit', 'can_delete'));
         } else {
             \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to display.');
@@ -182,7 +182,7 @@ class [[model_uc]]Controller extends Controller
     {
         if (!Auth::user()->can('[[model_singular]] edit')) {
             \Session::flash('flash_error_message', 'You do not have access to edit a [[display_name_singular]].');
-            if (Auth::user()->can('vc_vendor index')) {
+            if (Auth::user()->can('[[model_singular]] index')) {
                 return Redirect::route('[[view_folder]].index');
             } else {
                 return Redirect::route('home');
@@ -218,7 +218,7 @@ class [[model_uc]]Controller extends Controller
 //        }
 
         if (!$[[model_singular]] = $this->sanitizeAndFind($id)) {
-       //     \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to edit');
+       //     \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to edit.');
             return response()->json([
                 'message' => 'Not Found'
             ], 404);
@@ -236,9 +236,9 @@ class [[model_uc]]Controller extends Controller
                 ], 400);
             }
 
-            \Session::flash('flash_success_message', '[[display_name_singular]] ' . $[[model_singular]]->name . ' was changed');
+            \Session::flash('flash_success_message', '[[display_name_singular]] ' . $[[model_singular]]->name . ' was changed.');
         } else {
-            \Session::flash('flash_info_message', 'No changes were made');
+            \Session::flash('flash_info_message', 'No changes were made.');
         }
 
         return response()->json([
@@ -276,9 +276,9 @@ class [[model_uc]]Controller extends Controller
                 ], 400);
             }
 
-            \Session::flash('flash_success_message', 'Invitation for ' . $[[model_singular]]->name . ' was removed.');
+            \Session::flash('flash_success_message', '[[display_name_singular]] ' . $[[model_singular]]->name . ' was removed.');
         } else {
-            \Session::flash('flash_error_message', 'Unable to find Invite to delete.');
+            \Session::flash('flash_error_message', 'Unable to find [[display_name_singular]] to delete.');
 
         }
 
@@ -307,7 +307,7 @@ class [[model_uc]]Controller extends Controller
     {
 
         if (!Auth::user()->can('[[model_singular]] excel')) {
-            \Session::flash('flash_error_message', 'You do not have access to download [[display_name_singular]].');
+            \Session::flash('flash_error_message', 'You do not have access to download [[display_name_plural]].');
             if (Auth::user()->can('[[model_singular]] index')) {
                 return Redirect::route('[[view_folder]].index');
             } else {
@@ -341,7 +341,7 @@ class [[model_uc]]Controller extends Controller
         public function print()
 {
         if (!Auth::user()->can('[[model_singular]] export-pdf')) { // TODO: i think these permissions may need to be updated to match initial permissions?
-            \Session::flash('flash_error_message', 'You do not have access to print [[display_name_singular]]');
+            \Session::flash('flash_error_message', 'You do not have access to print [[display_name_plural]].');
             if (Auth::user()->can('[[model_singular]] index')) {
                 return Redirect::route('[[view_folder]].index');
             } else {

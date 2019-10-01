@@ -41,8 +41,8 @@
             <div class="row">
                 <div class="col-md-6">
                     <button type="submit" class="btn btn-primary" :disabled="processing">
-                        <span v-if="this.form_data.id">Change</span>
-                        <span v-else="this.form_data.id">Add</span>
+                        <span v-if="this.form_data.id">Change [[model_singular]]</span>
+                        <span v-else="this.form_data.id">Add [[model_singular]]</span>
                     </button>
                 </div>
                 <div class="col-md-6 text-md-right mt-2 mt-md-0">
@@ -104,7 +104,9 @@
         mounted() {
             if (this.record !== false) {
                 // this.form_data._method = 'patch';
-                Object.keys(this.record).forEach(i => this.form_data[i] = this.record[i])
+                Object.keys(this.record).forEach(
+                    i => (this.$set(this.form_data, i, this.record[i]))
+                )
             } else {
                 // this.form_data._method = 'post';
             }
@@ -139,9 +141,13 @@
                         if (error.response) {
                             if (error.response.status === 422) {
                                 // Clear errors out
-                                Object.keys(this.form_errors).forEach(i => this.form_errors[i] = false);
+                                Object.keys(this.form_errors).forEach(
+                                    i => (this.$set(this.form_errors, i, false))
+                                );
                                 // Set current errors
-                                Object.keys(error.response.data.errors).forEach(i => this.form_errors[i] = error.response.data.errors[i]);
+                                Object.keys(error.response.data.errors).forEach(
+                                    i => (this.$set(this.form_errors, i, error.response.data.errors[i]))
+                                );
                             } else  if (error.response.status === 404) {  // Record not found
                                 this.server_message = 'Record not found';
                                 window.location = '/[[route_path]]';

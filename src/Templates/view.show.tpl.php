@@ -18,11 +18,11 @@ View {{$[[model_singular]]->name}}
     <[[route_path]]-show :record='@json($[[model_singular]])'></[[route_path]]-show>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="row mt-4">
                 <div class="col-md-4">
                     @if ($can_edit)
-                        <a href="/[[route_path]]/{{ $[[model_singular]]->id }}/edit" class="btn btn-primary">Edit</a>
+                        <a href="/[[route_path]]/{{ $[[model_singular]]->id }}/edit" class="btn btn-primary">Edit [[model_singular]]</a>
                     @endif
                 </div>
                 <div class="col-md-4 text-md-center mt-2 mt-md-0">
@@ -31,7 +31,7 @@ View {{$[[model_singular]]->name}}
                             <input type="hidden" name="_method" value="delete">
                             {{ csrf_field() }}
 
-                            <input class="btn btn-danger" Onclick="return ConfirmDelete();" type="submit" value="Delete">
+                            <input class="btn btn-danger" Onclick="return ConfirmDelete();" type="submit" value="Delete [[model_singular]]">
 
                         </form>
                     @endif

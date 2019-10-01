@@ -10,7 +10,7 @@
         <div class="grid-top row mb-0 align-items-center">
             <div class="col-lg-8 mb-2">
                 <form class="form-inline mb-0">
-                    <a href="#" @click.default="goToNew" class="btn btn-primary mb-3 mb-sm-2 mr-3">Add</a>
+                    <a v-if="params.CanAdd" href="#" @click.default="goToNew" class="btn btn-primary mb-3 mb-sm-2 mr-3">Add [[model_singular]]</a>
                     <search-form-group
                             class="mb-0"
                             :errors="form_errors.keyword"
@@ -50,7 +50,7 @@
 
                     </ss-grid-column-header>
                     [[endforeach]]
-                    <th style="width:20%;" class="text-center">Actions</th>
+                    <th style="width:20%;" class="text-lg-center">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -129,9 +129,9 @@
 
 <script>
 
-    import SsGridColumnHeader from "./SsGridColumnHeader";
-    import SsGridPagination from "./SsGridPagination";
-    import SsGridPaginationLocation from "./SsPaginationLocation";
+    import SsGridColumnHeader from "../SS/SsGridColumnHeader";
+    import SsGridPagination from "../SS/SsGridPagination";
+    import SsGridPaginationLocation from "../SS/SsPaginationLocation";
 
     export default {
         name: '[[view_folder]]-grid',
