@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use DB;
 use Artisan;
+use phpDocumentor\Reflection\File;
 
 class CrudGeneratorService
 {
@@ -145,21 +146,28 @@ class CrudGeneratorService
         $filegenerator->path = base_path().'/resources/views/'.$this->viewFolderName.'/print.blade.php';
         $filegenerator->Generate();
 
+        // Put VueJS componets into a subdirectory
+        $vue_subdir = base_path() . '/resources/js/components/' . $this->tableName;
+
+        if (!file_exists($vue_subdir)) {
+            mkdir($vue_subdir);
+        }
+
         $filegenerator->templateName = 'Grid.vue';
-        $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Grid.vue';
+        $filegenerator->path = $vue_subdir . '/'.$modelname.'Grid.vue';
         $filegenerator->Generate();
-        exec("prettier --write " . base_path().'/resources/js/components/'.$modelname.'Grid.vue');
+        exec("prettier --write " . $vue_subdir . '/'.$modelname.'Grid.vue');
 
         $filegenerator->templateName = 'Form.vue';
-        $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Form.vue';
+        $filegenerator->path = $vue_subdir . '/'.$modelname.'Form.vue';
         $filegenerator->Generate();
-        exec("prettier --write " . base_path().'/resources/js/components/'.$modelname.'Form.vue');
+        exec("prettier --write " . $vue_subdir . '/'.$modelname.'Form.vue');
 
 
         $filegenerator->templateName = 'Show.vue';
-        $filegenerator->path = base_path().'/resources/js/components/'.$modelname.'Show.vue';
+        $filegenerator->path = $vue_subdir . '/'.$modelname.'Show.vue';
         $filegenerator->Generate();
-        exec("prettier --write " . base_path().'/resources/js/components/'.$modelname.'Show.vue');
+        exec("prettier --write " . $vue_subdir . '/'.$modelname.'Show.vue');
 
         $filegenerator->templateName = 'ControllerTest';
         $filegenerator->path = base_path().'/tests/Feature/'.$modelname.'ControllerTest.php';
@@ -172,19 +180,19 @@ class CrudGeneratorService
 
         // ### VUE JS ###
 
-        $addvue = "//Vue.component('" . $this->viewFolderName . "-grid',       require('./components/" . $modelname . "Grid.vue'));    // May need to add .default);";
+//        $addvue = "//Vue.component('" . $this->viewFolderName . "-grid',       require('./components/" . $modelname . "Grid.vue'));    // May need to add .default);";
+//        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
+//
+//        $addvue = "//Vue.component('" . $this->viewFolderName . "-form',       require('./components/" . $modelname . "Form.vue'));    // May need to add .default);";
+//        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
+
+        $addvue = "Vue.component('" . $this->viewFolderName . "-grid', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-grid\" */ './components/".$this->tableName.'/' . $modelname . "Grid.vue'));";
         $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
 
-        $addvue = "//Vue.component('" . $this->viewFolderName . "-form',       require('./components/" . $modelname . "Form.vue'));    // May need to add .default);";
+        $addvue = "Vue.component('" . $this->viewFolderName . "-form', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-form\" */ './components/".$this->tableName.'/' . $modelname . "Form.vue'));";
         $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
 
-        $addvue = "Vue.component('" . $this->viewFolderName . "-grid', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-grid\" */ './components/" . $modelname . "Grid.vue'));";
-        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
-
-        $addvue = "Vue.component('" . $this->viewFolderName . "-form', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-form\" */ './components/" . $modelname . "Form.vue'));";
-        $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
-
-        $addvue = "Vue.component('" . $this->viewFolderName . "-show', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-Show\" */ './components/" . $modelname . "Show.vue'));";
+        $addvue = "Vue.component('" . $this->viewFolderName . "-show', () => import(/* webpackChunkName:\"" . $this->viewFolderName . "-Show\" */ './components/".$this->tableName.'/' . $modelname . "Show.vue'));";
         $this->appendToEndOfFile(base_path().'/resources/js/components.js', "\n".$addvue, 0, true);
 
 
